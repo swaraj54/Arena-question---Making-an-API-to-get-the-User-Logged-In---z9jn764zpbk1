@@ -31,6 +31,36 @@ Output:
 */
 const getCurrentUser = async (req, res) => {
     //Write your Code Here
+    try {
+        const token = req.headers.authorization;
+        if (!token) return res.status(401).json({ status: "Error", message: "Unauthorized" });
+
+        // console.log("Before decode")
+        const decodedToken = jwt.verify(token, JWT_SECRET);
+        // console.log(decodedToken,"- after decode")
+        const userId = decodedToken.userId;
+
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({
+                status: "Error",
+                message: "User not found"
+            })
+        }
+
+        return res.status(200).json({
+            status: "Success",
+            user
+        })
+
+    } catch (err) {
+        res.status(401).json({
+            message: "Unauthorized",
+            status: "Error",
+            error: err,
+        });
+    }
 };
 
 // Fetches all Users data [Paginated]
@@ -189,5 +219,5 @@ const deleteUser = async (req, res) => {
 };
 
 
-module.exports = {getAllUsers, getUserByID, createUser, updateUser, deleteUser, getCurrentUser};
+module.exports = { getAllUsers, getUserByID, createUser, updateUser, deleteUser, getCurrentUser };
 
